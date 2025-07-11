@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Landscaping Estimate – Residential & Commercial</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+  :root{--green-dark:#2d5016;--green:#4a7c59;--accent:#667eea}
+  body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,var(--accent),#764ba2)}
+  .container{max-width:800px;margin:40px auto;background:#fff;border-radius:20px;box-shadow:0 15px 30px rgba(0,0,0,.1);overflow:hidden}
+  .header{background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;padding:40px 30px;text-align:center}
+  .header h1{margin:0;font-size:2.2em}
+  form{padding:30px}
+  .form-step{display:none;opacity:0;transition:opacity .25s}.form-step.active{display:block;opacity:1}
+  .form-group{margin-bottom:20px}
+  label{display:block;margin-bottom:8px;font-weight:600}
+  input,select,textarea{width:100%;padding:10px;font-size:16px;border-radius:8px;border:1px solid #ccc;font-family:inherit}
+  textarea{min-height:90px;resize:vertical}
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px}
+  .service-item{background:#f9f9f9;padding:12px;border-radius:8px;border:1px solid #ddd;transition:.3s}
+  .service-item:hover{background:#f1fff5;border-color:var(--green)}
+  .freq-select{margin-top:8px;display:none}
+  .nav-btn{background:var(--green);color:#fff;padding:14px 22px;border:none;border-radius:10px;font-size:1em;cursor:pointer;margin-top:10px}
+  .nav-group{display:flex;justify-content:space-between;gap:10px}
+  .quote-result{background:#e9fcef;padding:24px;border-radius:10px;margin:25px;display:none;text-align:center;font-size:15px;line-height:1.6}
+  .quote-result h2{color:var(--green-dark);margin:0 0 8px;font-size:1.35em}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🌿 Landscaping Estimate</h1>
+    <p>Pricing is calculated <strong>per visit</strong>; choose the services you need.</p>
+  </div>
+
+  <form id="estimateForm">
+    <!-- STEP 1 -->
+    <div class="form-step active" id="step1">
+      <div class="form-group">
+        <label for="propertySize">Property Size (acres)</label>
+        <select id="propertySize" name="propertySize" required>
+          <option value="">Choose size...</option>
+          <option value="0.25">Up to ¼ acre (≤10 900 ft²)</option>
+          <option value="0.5">¼ – ½ acre</option><option value="1">½ – 1 acre</option>
+          <option value="2">1 – 2 acres</option><option value="3">2 – 3 acres</option>
+          <option value="5">3 – 5 acres</option><option value="10">5 – 10 acres</option>
+          <option value="20">10 – 20 acres</option>
+        </select>
+      </div>
+      <div class="nav-group"><span></span><button type="button" class="nav-btn" onclick="nextStep(2)">Next ➜</button></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="form-step" id="step2">
+      <div class="form-group">
+        <label for="propertyType">Property Type</label>
+        <select id="propertyType" name="property_type" required>
+          <option value="">Select...</option><option value="residential">Residential</option><option value="commercial">Commercial</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Select Services & Frequency:</label>
+        <div class="services-grid" id="serviceGrid"></div>
+      </div>
+
+      <div class="nav-group">
+        <button type="button" class="nav-btn" onclick="prevStep(1)">⬅ Back</button>
+        <button type="button" class="nav-btn" onclick="nextStep(3)">Next ➜</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="form-step" id="step3">
+      <div class="form-group"><label for="name">Full Name</label><input id="name" name="name" required></div>
+      <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+      <div class="form-group"><label for="phone">Phone Number</label><input id="phone" name="phone" type="tel" required></div>
+      <div class="form-group"><label for="message_body">Comments / Questions (optional)</label><textarea id="message_body" name="message_body" placeholder="Let us know anything special about your lawn…"></textarea></div>
+      <div class="nav-group">
+        <button type="button" class="nav-btn" onclick="prevStep(2)">⬅ Back</button>
+        <button type="submit" class="nav-btn">Submit for FREE Estimate</button>
+      </div>
+    </div>
+  </form>
+
+  <div id="estimateResult" class="quote-result">
+    <h2>Thank you for requesting your estimate!</h2>
+    <p>We’ve emailed the details to you. If you don’t see it, please check your Spam / Junk folder.</p>
+  </div>
+</div>
+
+<script>
+/* ── Service catalog ─ */
+const serviceCatalog=[
+  {name:"Lawn Mowing",               min:110,max:165},
+  {name:"Lawn Edging",               min: 18,max: 91},
+  {name:"Lawn Weed Control",         min: 78,max: 91},
+  {name:"Lawn Fertilization",        min: 46,max:137},
+  {name:"Lawn Seeding",              min:640,max:915},
+  {name:"Lawn Aeration",             min: 78,max:114},
+  {name:"Lawn Soil Care",            min: 18,max: 91},
+  {name:"Lawn Leaf Removal",         min: 69,max:457},
+  {name:"Lawn Tree & Shrub Care",    min:274,max:549},
+  {name:"Lawn Pest Visit",           min: 91,max:1189}
+];
+
+/* Inject services */
+const grid=document.getElementById('serviceGrid');
+for(const s of serviceCatalog){
+  grid.insertAdjacentHTML('beforeend',
+    <div class="service-item">
+      <label><input type="checkbox" name="services" value="${s.name}"> ${s.name}</label>
+      <select class="freq-select" data-service="${s.name}">
+        <option value="">Frequency...</option><option value="one-time">One-time</option>
+        <option value="weekly">Weekly</option><option value="biweekly">Bi-weekly</option>
+        <option value="monthly">Monthly</option><option value="seasonal">Seasonal</option>
+      </select>
+    </div>);
+}
+
+/* ── Pager helpers ─ */
+const steps=document.querySelectorAll('.form-step');
+const nextStep=n=>{steps.forEach(s=>s.classList.remove('active'));document.getElementById('step'+n).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+const prevStep=n=>nextStep(n);
+
+/* Toggle frequency dropdowns */
+document.addEventListener('change',e=>{
+  if(e.target.matches('input[name="services"]')){
+    const sel=document.querySelector(select[data-service="${e.target.value}"]);
+    if(sel){sel.style.display=e.target.checked?'block':'none';if(!e.target.checked)sel.value='';}
+  }
+});
+
+/* Multiplier */
+const sizeTypeMultiplier=(acres,type)=>{
+  const size=Math.pow((parseFloat(acres)||0.25)/0.25,0.8);
+  return size*(type==="commercial"?1.4:1);
+};
+
+/* Submit */
+const form=document.getElementById('estimateForm');
+const resultBox=document.getElementById('estimateResult');
+
+form.addEventListener('submit',e=>{
+  e.preventDefault();
+  const d=new FormData(form);
+  const size=d.get('propertySize');
+  const type=d.get('property_type');
+  const mult=sizeTypeMultiplier(size,type);
+
+  /* Selected services + freq */
+  const selected=[];
+  document.querySelectorAll('input[name="services"]:checked').forEach(cb=>{
+    const sel=document.querySelector(select[data-service="${cb.value}"]);
+    sel.value=sel.value||'one-time';
+    selected.push({service:cb.value,freq:sel.value});
+  });
+  if(!selected.length){alert('Select at least one service.');return;}
+
+  /* Build HTML-stacked breakdown */
+  let breakdownLines=[];
+  selected.forEach(it=>{
+    const base=serviceCatalog.find(s=>s.name===it.service);
+    if(!base){console.warn('Missing baseline for',it.service);return;}
+    const avg=((base.min+base.max)/2)*mult;
+    breakdownLines.push(${it.service} (${it.freq}) $${avg.toFixed(0)} per visit);
+  });
+  const breakdownHTML=breakdownLines.join('<br>');
+  const freqList=selected.map(i=>i.freq).join(', ');
+
+  /* Payload */
+  const payload={
+    name : d.get('name').trim(),
+    email: d.get('email').trim(),
+    phone: d.get('phone').trim(),
+    custom_fields:{
+      property_size      : size,
+      property_type      : type,
+      services_selected  : selected.map(i=>${i.service} (${i.freq})).join('; '),
+      service_frequency  : freqList,
+      per_visit_breakdown: breakdownHTML,
+      message_body       : d.get('message_body') || ''
+    },
+    lead_source:"Landscaping Estimate Form",
+    tags:["Landscaping Lead","Estimate Requested"]
+  };
+  fetch('https://services.leadconnectorhq.com/hooks/26yJ8dX3MroEH8swtIxn/webhook-trigger/c9d06d79-5822-49ea-8a2f-8ae182783252',{
+    method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+  }).catch(console.error);
+
+  /* Thank-you panel only */
+  resultBox.style.display='block';
+
+  form.reset();
+  document.querySelectorAll('.freq-select').forEach(sel=>sel.style.display='none');
+  nextStep(1);
+});
+</script>
+</body>
+</html>
